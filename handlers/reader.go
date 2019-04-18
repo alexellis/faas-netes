@@ -39,7 +39,7 @@ func getServiceList(functionNamespace string, clientset *kubernetes.Clientset) (
 	functions := []requests.Function{}
 
 	listOpts := metav1.ListOptions{
-		LabelSelector: "faas_function",
+		LabelSelector: FunctionNameLabel,
 	}
 
 	res, err := clientset.ExtensionsV1beta1().Deployments(functionNamespace).List(listOpts)

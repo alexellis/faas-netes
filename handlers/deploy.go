@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/openfaas/faas/gateway/requests"
@@ -27,9 +26,6 @@ import (
 
 // watchdogPort for the OpenFaaS function watchdog
 const watchdogPort = 8080
-
-// initialReplicasCount how many replicas to start of creating for a function
-const initialReplicasCount = 1
 
 // Regex for RFC-1123 validation:
 // 	k8s.io/kubernetes/pkg/util/validation/validation.go
@@ -165,22 +161,12 @@ func makeDeploymentSpec(request requests.CreateFunctionRequest, existingSecrets 
 		FailureThreshold:    3,
 	}
 
-	initialReplicas := int32p(initialReplicasCount)
-	labels := map[string]string{
-		"faas_function": request.Service,
+	initialReplicas, replicaErr := getMinReplicaCount(request.Labels)
+	if replicaErr != nil {
+		return nil, replicaErr
 	}
-
-	if request.Labels != nil {
-		if min := getMinReplicaCount(*request.Labels); min != nil {
-			initialReplicas = min
-		}
-		for k, v := range *request.Labels {
-			labels[k] = v
-		}
-	}
-
+	labels := buildLabels(request.Service, request.Labels)
 	nodeSelector := createSelector(request.Constraints)
-
 	resources, resourceErr := createResources(request)
 
 	if resourceErr != nil {
@@ -220,7 +206,7 @@ func makeDeploymentSpec(request requests.CreateFunctionRequest, existingSecrets 
 		Spec: v1beta1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"faas_function": request.Service,
+					FunctionNameLabel: request.Service,
 				},
 			},
 			Replicas: initialReplicas,
@@ -294,7 +280,7 @@ func makeServiceSpec(request requests.CreateFunctionRequest) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeClusterIP,
 			Selector: map[string]string{
-				"faas_function": request.Service,
+				FunctionNameLabel: request.Service,
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -408,19 +394,6 @@ func createResources(request requests.CreateFunctionRequest) (*apiv1.ResourceReq
 	}
 
 	return resources, nil
-}
-
-func getMinReplicaCount(labels map[string]string) *int32 {
-	if value, exists := labels["com.openfaas.scale.min"]; exists {
-		minReplicas, err := strconv.Atoi(value)
-		if err == nil && minReplicas > 0 {
-			return int32p(int32(minReplicas))
-		}
-
-		log.Println(err)
-	}
-
-	return nil
 }
 
 // configureReadOnlyRootFilesystem will create or update the required settings and mounts to ensure

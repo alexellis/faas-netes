@@ -66,7 +66,7 @@ func MakeDeleteHandler(functionNamespace string, clientset *kubernetes.Clientset
 
 func isFunction(deployment *v1beta1.Deployment) bool {
 	if deployment != nil {
-		if _, found := deployment.Labels["faas_function"]; found {
+		if _, found := deployment.Labels[FunctionNameLabel]; found {
 			return true
 		}
 	}
