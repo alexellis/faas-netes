@@ -380,10 +380,6 @@ Additional OpenFaaS options in `values.yaml`.
 | `operator.createCRD` | Create the CRD for OpenFaaS Function definition | `true` |
 | `ingress.enabled` | Create ingress resources | `false` |
 | `faasnetes.httpProbe` | Use a httpProbe instead of exec | `false` |
-| `ingressOperator.create` | Create the ingress-operator component | `false` |
-| `ingressOperator.replicas` | Replicas of the ingress-operator| `1` |
-| `ingressOperator.image` | Container image used in ingress-operator| `openfaas/ingress-operator:0.6.2` |
-| `ingressOperator.resources` | Limits and requests for memory and CPU usage | Memory Requests: 25Mi |
 | `faasnetes.readTimeout` | Queue worker read timeout | `60s` |
 | `faasnetes.writeTimeout` | Queue worker write timeout | `60s` |
 | `faasnetes.imagePullPolicy` | Image pull policy for deployed functions | `Always` |

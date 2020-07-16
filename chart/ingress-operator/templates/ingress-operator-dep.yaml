@@ -1,5 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
-{{- if .Values.ingressOperator.create }}
+{{- if .Values.create }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,7 +11,7 @@ metadata:
   name: ingress-operator
   namespace: {{ .Release.Namespace | quote }}
 spec:
-  replicas: {{ .Values.ingressOperator.replicas }}
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       app: ingress-operator
@@ -27,15 +26,15 @@ spec:
       containers:
       - name: operator
         resources:
-          {{- .Values.ingressOperator.resources | toYaml | nindent 10 }}
-        image: {{ .Values.ingressOperator.image }}
-        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+          {{- .Values.resources | toYaml | nindent 10 }}
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - ./ingress-operator
           - -logtostderr
         env:
         - name: function_namespace
-          value: {{ $functionNs | quote }}
+          value: {{ .Values.functionNamespace | quote }}
         - name: ingress_namespace
           value: {{ .Release.Namespace | quote }}
 {{- end }}

@@ -36,9 +36,6 @@ basicAuthPlugin:
   image: openfaas/basic-auth-plugin:0.18.17-armhf
   replicas: 0
 
-ingressOperator:
-  create: false
-
 # Unfortunately the exporter is not multi-arch (yet)
 nats:
   metrics:

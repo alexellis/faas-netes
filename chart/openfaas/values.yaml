@@ -1,12 +1,12 @@
-functionNamespace: openfaas-fn  # Default namespace for functions
+functionNamespace: openfaas-fn # Default namespace for functions
 
 async: true
 
 exposeServices: true
 serviceType: NodePort
-httpProbe: true               # Setting to true will use HTTP for readiness and liveness probe on the OpenFaaS system Pods (incompatible with Istio < 1.1.5)
+httpProbe: true # Setting to true will use HTTP for readiness and liveness probe on the OpenFaaS system Pods (incompatible with Istio < 1.1.5)
 rbac: true
-clusterRole: false            # Set to true to have OpenFaaS administrate multiple namespaces
+clusterRole: false # Set to true to have OpenFaaS administrate multiple namespaces
 
 # create pod security policies for OpenFaaS control plane
 # https://kubernetes.io/docs/concepts/policy/pod-security-policy/
@@ -23,9 +23,9 @@ gatewayExternal:
 
 gateway:
   image: openfaas/gateway:0.18.17
-  readTimeout : "65s"
-  writeTimeout : "65s"
-  upstreamTimeout : "60s"  # Must be smaller than read/write_timeout
+  readTimeout: "65s"
+  writeTimeout: "65s"
+  upstreamTimeout: "60s" # Must be smaller than read/write_timeout
   replicas: 1
   scaleFromZero: true
   # change the port when creating multiple releases in the same baremetal cluster
@@ -74,19 +74,19 @@ oauth2Plugin:
 
 faasnetes:
   image: openfaas/faas-netes:0.10.5
-  readTimeout : "60s"
-  writeTimeout : "60s"
-  imagePullPolicy : "Always"    # Image pull policy for deployed functions
-  httpProbe: true               # Setting to true will use HTTP for readiness and liveness probe on Pods (incompatible with Istio < 1.1.5)
+  readTimeout: "60s"
+  writeTimeout: "60s"
+  imagePullPolicy: "Always" # Image pull policy for deployed functions
+  httpProbe: true # Setting to true will use HTTP for readiness and liveness probe on Pods (incompatible with Istio < 1.1.5)
   setNonRootUser: false
   readinessProbe:
     initialDelaySeconds: 2
-    timeoutSeconds: 1           # Tuned-in to run checks early and quickly to support fast cold-start from zero replicas
-    periodSeconds: 2            # Reduce to 1 for a faster cold-start, increase higher for lower-CPU usage
+    timeoutSeconds: 1 # Tuned-in to run checks early and quickly to support fast cold-start from zero replicas
+    periodSeconds: 2 # Reduce to 1 for a faster cold-start, increase higher for lower-CPU usage
   livenessProbe:
     initialDelaySeconds: 2
     timeoutSeconds: 1
-    periodSeconds: 2           # Reduce to 1 for a faster cold-start, increase higher for lower-CPU usage
+    periodSeconds: 2 # Reduce to 1 for a faster cold-start, increase higher for lower-CPU usage
   resources:
     requests:
       memory: "120Mi"
@@ -112,7 +112,7 @@ queueWorker:
   maxInflight: 1
   gatewayInvoke: true
   queueGroup: "faas"
-  ackWait : "60s"
+  ackWait: "60s"
   resources:
     requests:
       memory: "120Mi"
@@ -148,7 +148,7 @@ nats:
   enableMonitoring: false
   metrics:
     enabled: false
-    image: synadia/prometheus-nats-exporter:0.6.2 
+    image: synadia/prometheus-nats-exporter:0.6.2
   resources:
     requests:
       memory: "120Mi"
@@ -158,7 +158,7 @@ ingress:
   enabled: false
   # Used to create Ingress record (should be used with exposeServices: false).
   hosts:
-    - host: gateway.openfaas.local  # Replace with gateway.example.com if public-facing
+    - host: gateway.openfaas.local # Replace with gateway.example.com if public-facing
       serviceName: gateway
       servicePort: 8080
       path: /
@@ -167,24 +167,14 @@ ingress:
   tls:
     # Secrets must be manually created in the namespace.
 
-# ingressOperator (optional) – component to have specific FQDN and TLS for Functions
-# https://github.com/openfaas-incubator/ingress-operator
-ingressOperator:
-  image: openfaas/ingress-operator:0.6.2
-  replicas: 1
-  create: false
-  resources:
-    requests:
-      memory: "25Mi"
-
 # faas-idler configuration
 faasIdler:
   image: openfaas/faas-idler:0.3.0
   replicas: 1
   create: true
-  inactivityDuration: 30m               # If a function is inactive for 15 minutes, it may be scaled to zero
-  reconcileInterval: 2m                 # The interval between each attempt to scale functions to zero
-  dryRun: true                          # Set to false to enable the idler to apply changes and scale to zero
+  inactivityDuration: 30m # If a function is inactive for 15 minutes, it may be scaled to zero
+  reconcileInterval: 2m # The interval between each attempt to scale functions to zero
+  dryRun: true # Set to false to enable the idler to apply changes and scale to zero
   resources:
     requests:
       memory: "64Mi"

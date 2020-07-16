@@ -1,0 +1,1 @@
+Thanks for installing ingress-operator. Please follow the instructions below to get you started.
