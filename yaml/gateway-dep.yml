@@ -33,7 +33,7 @@ spec:
             requests:
               cpu: 50m
               memory: 120Mi
-        image: openfaas/gateway:0.20.2
+        image: ghcr.io/openfaas/gateway:0.20.5
         imagePullPolicy: Always
         securityContext:
           readOnlyRootFilesystem: true
@@ -96,7 +96,7 @@ spec:
             requests:
               cpu: 50m
               memory: 120Mi
-        image: ghcr.io/openfaas/faas-netes:0.12.9
+        image: ghcr.io/openfaas/faas-netes:0.12.10
         imagePullPolicy: Always
         securityContext:
           readOnlyRootFilesystem: true
