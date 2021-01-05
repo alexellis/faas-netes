@@ -38,4 +38,10 @@ spec:
           value: {{ $functionNs | quote }}
         - name: ingress_namespace
           value: {{ .Release.Namespace | quote }}
+    {{- with .Values.openfaasImagePullSecrets }}
+      imagePullSecrets:
+      {{- range . }}
+        - name: {{ . }}
+      {{- end }}
+    {{- end }}
 {{- end }}

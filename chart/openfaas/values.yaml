@@ -19,6 +19,8 @@ generateBasicAuth: false
 # image pull policy for openfaas components, can change to `IfNotPresent` in offline env
 openfaasImagePullPolicy: "Always"
 
+openfaasImagePullSecrets: []
+
 gatewayExternal:
   annotations: {}
 

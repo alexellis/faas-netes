@@ -60,7 +60,7 @@ spec:
             secretName: basic-auth
 
 {{- end }}
-{{- with .Values.nodeSelector }}
+    {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -71,5 +71,11 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
-{{- end }}
+    {{- end }}
+    {{- with .Values.openfaasImagePullSecrets }}
+      imagePullSecrets:
+      {{- range . }}
+        - name: {{ . }}
+      {{- end }}
+    {{- end }}
 {{- end }}
