@@ -1,0 +1,24 @@
+{{- if .Values.oidc.opa.enabled }}
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: opa-config
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: opa-config
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  openfaas_authz.rego: |
+    package openfaas.authz
+
+    default allow = false
+
+    allow {
+      input.function == "opa-auth"
+      input.user == "alice"
+    }
+{{- end }}

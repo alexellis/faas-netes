@@ -1,0 +1,77 @@
+{{- if .Values.oidc.opa.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: opa
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: opa
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  replicas: {{ .Values.oidc.replicas }}
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      annotations:
+        prometheus.io.scrape: "false"
+      labels:
+        app: opa
+    spec:
+      volumes:
+      - name: opa-temp-volume
+        emptyDir: {}
+      - name: opa-config
+        configMap:
+          name: opa-config
+          items:
+            - key: openfaas_authz.rego
+              path: openfaas_authz.rego
+              mode: 0644
+      containers:
+      - name:  opa
+        resources:
+          {{- .Values.oidc.resources | toYaml | nindent 12 }}
+        image: {{ .Values.oidc.opa.image }}
+        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+        {{- if .Values.securityContext }}
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsUser: 10001
+        {{- end }}
+        args:
+          - "run"
+          - "--server"
+          - "--log-level=debug"
+          - "--skip-version-check"
+          - "/policy/openfaas_authz.rego"
+        volumeMounts:
+        - name: opa-temp-volume
+          mountPath: /tmp
+        - name: opa-config
+          readOnly: true
+          mountPath: "/policy/"
+        ports:
+        - name: http
+          containerPort: 8081
+          protocol: TCP
+
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+{{- end }}

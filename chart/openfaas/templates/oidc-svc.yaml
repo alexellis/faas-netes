@@ -1,5 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
-{{- if .Values.oauth2Plugin.enabled }}
+{{- if .Values.oidc.enabled }}
 ---
 
 apiVersion: v1
@@ -8,10 +7,10 @@ metadata:
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    component: oauth2-plugin
+    component: oidc
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-  name: oauth2-plugin
+  name: oidc
   namespace: {{ .Release.Namespace | quote }}
 spec:
   type: ClusterIP
@@ -21,6 +20,6 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: oauth2-plugin
+    app: oidc
 
 {{- end }}

@@ -50,7 +50,9 @@ basicAuthPlugin:
       memory: "50Mi"
       cpu: "20m"
 
-oauth2Plugin:
+## Commercial OIDC authentication and authorization
+## For Premium Subscription customers
+oidc:
   enabled: false
   provider: "" # Leave blank, or put "azure"
   license: "example"
@@ -72,6 +74,11 @@ oauth2Plugin:
   replicas: 1
   image: openfaas/openfaas-oidc-plugin:0.3.7
   securityContext: true
+
+# OPA provides authorization
+  opa:
+    image: openpolicyagent/opa:0.24.0
+    enabled: true
 
 faasnetes:
   image: ghcr.io/openfaas/faas-netes:0.12.12

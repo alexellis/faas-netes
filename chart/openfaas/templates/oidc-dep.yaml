@@ -1,5 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
-{{- if .Values.oauth2Plugin.enabled }}
+{{- if .Values.oidc.enabled }}
 ---
 
 apiVersion: apps/v1
@@ -8,25 +7,25 @@ metadata:
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    component: oauth2-plugin
+    component: oidc
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-  name: oauth2-plugin
+  name: oidc
   namespace: {{ .Release.Namespace | quote }}
 spec:
-  replicas: {{ .Values.oauth2Plugin.replicas }}
+  replicas: {{ .Values.oidc.replicas }}
   selector:
     matchLabels:
-      app: oauth2-plugin
+      app: oidc
   template:
     metadata:
       annotations:
         prometheus.io.scrape: "false"
       labels:
-        app: oauth2-plugin
+        app: oidc
     spec:
       volumes:
-      - name: oauth2-plugin-temp-volume
+      - name: oidc-temp-volume
         emptyDir: {}
       {{- if .Values.basic_auth }}
       - name: auth
@@ -34,10 +33,10 @@ spec:
           secretName: basic-auth
       {{- end }}
       containers:
-      - name:  oauth2-plugin
+      - name:  oidc
         resources:
-          {{- .Values.oauth2Plugin.resources | toYaml | nindent 12 }}
-        image: {{ .Values.oauth2Plugin.image }}
+          {{- .Values.oidc.resources | toYaml | nindent 12 }}
+        image: {{ .Values.oidc.image }}
         imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
         {{- if .Values.securityContext }}
         securityContext:
@@ -77,41 +76,41 @@ spec:
           {{- end }}
           timeoutSeconds: 5
         args:
-        - "-license={{- .Values.oauth2Plugin.license}}"
-        - "-provider={{- .Values.oauth2Plugin.provider}}"
+        - "-license={{- .Values.oidc.license}}"
+        - "-provider={{- .Values.oidc.provider}}"
         env:
         - name: client_id
-          value: "{{- .Values.oauth2Plugin.clientID}}"
+          value: "{{- .Values.oidc.clientID}}"
         - name: client_secret
-          value: "{{- .Values.oauth2Plugin.clientSecret}}"
+          value: "{{- .Values.oidc.clientSecret}}"
         - name: cookie_domain
-          value: "{{- .Values.oauth2Plugin.cookieDomain}}"
+          value: "{{- .Values.oidc.cookieDomain}}"
         - name: base_host
-          value: "{{- .Values.oauth2Plugin.baseHost}}"
+          value: "{{- .Values.oidc.baseHost}}"
         - name: port
           value: "8080"
         - name: authorize_url
-          value: "{{- .Values.oauth2Plugin.authorizeURL}}"
+          value: "{{- .Values.oidc.authorizeURL}}"
         - name: welcome_page_url
-          value: "{{- .Values.oauth2Plugin.welcomePageURL}}"
+          value: "{{- .Values.oidc.welcomePageURL}}"
         - name: public_key_path
           value: ""  # leave blank if using jwks
         - name: audience
-          value: "{{- .Values.oauth2Plugin.audience}}"
+          value: "{{- .Values.oidc.audience}}"
         - name: token_url
-          value: "{{- .Values.oauth2Plugin.tokenURL}}"
+          value: "{{- .Values.oidc.tokenURL}}"
         - name: scopes
-          value: "{{- .Values.oauth2Plugin.scopes}}"
+          value: "{{- .Values.oidc.scopes}}"
         - name: jwks_url
-          value: "{{- .Values.oauth2Plugin.jwksURL}}"
+          value: "{{- .Values.oidc.jwksURL}}"
         - name: insecure_tls
-          value: "{{- .Values.oauth2Plugin.insecureTLS}}"
+          value: "{{- .Values.oidc.insecureTLS}}"
         {{- if .Values.basic_auth }}
         - name: secret_mount_path
           value: "/var/secrets"
         {{- end }}
         volumeMounts:
-        - name: oauth2-plugin-temp-volume
+        - name: oidc-temp-volume
           mountPath: /tmp
         {{- if .Values.basic_auth }}
         - name: auth

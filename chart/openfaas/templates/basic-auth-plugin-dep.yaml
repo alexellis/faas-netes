@@ -1,6 +1,6 @@
 {{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
 {{- if .Values.basic_auth }}
-{{- if not .Values.oauth2Plugin.enabled }}
+{{- if not .Values.oidc.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -10,7 +10,7 @@ gateway:
   image: openfaas/gateway:0.20.2-armhf
   directFunctions: true
 
-oauth2Plugin:
+oidc:
   enabled: false
 
 faasnetes:
