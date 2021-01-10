@@ -306,19 +306,6 @@ By default services will be exposed with following hostnames (can be changed, se
 
 * `gateway.openfaas.local`
 
-### Endpoint load-balancing
-
-Some configurations in combination with client-side KeepAlive settings may because load to be spread unevenly between replicas of a function. If you experience this, there are three ways to work around it:
-
-* [Install Linkerd2](https://github.com/openfaas-incubator/openfaas-linkerd2) which takes over load-balancing from the Kubernetes L4 Service (recommended)
-* Disable KeepAlive in the client-side code (not recommended)
-* Configure the gateway to pass invocations through to the faas-netes provider (alternative to using Linkerd2)
-
-    ```sh
-    --set gateway.directFunctions=false
-    ```
-
-    In this mode, all invocations will pass through the gateway to faas-netes, which will look up endpoint IPs directly from Kubernetes, the additional hop may add some latency, but will do fair load-balancing, even with KeepAlive.
 
 ### SSL / TLS
 
@@ -450,7 +437,7 @@ Additional OpenFaaS options in `values.yaml`.
 | `faasnetes.writeTimeout` | Queue worker write timeout | `60s` |
 | `faasnetes.imagePullPolicy` | Image pull policy for deployed functions | `Always` |
 | `faasnetes.setNonRootUser` | Force all function containers to run with user id `12000` | `false` |
-| `gateway.directFunctions` | Invoke functions directly without using the provider | `true` |
+| `gateway.directFunctions` | Invoke functions directly without using the provider | `false` |
 | `gateway.replicas` | Replicas of the gateway, pick more than `1` for HA | `1` |
 | `gateway.readTimeout` | Queue worker read timeout | `65s` |
 | `gateway.writeTimeout` | Queue worker write timeout | `65s` |
