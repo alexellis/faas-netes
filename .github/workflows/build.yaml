@@ -13,6 +13,7 @@ jobs:
         go-version: [1.15.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@master
       - name: Install Go
@@ -24,6 +25,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Get Repo Owner
+        id: get_repo_owner
+        run: echo ::set-output name=repo_owner::$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
+
       - name: Build x86_64 container into library
         uses: docker/build-push-action@v2
         with:
@@ -32,7 +37,7 @@ jobs:
           outputs: "type=docker,push=false"
           platforms: linux/amd64
           tags: |
-            ghcr.io/openfaas/faas-netes:${{ github.sha }}
+            ghcr.io/${{ steps.get_repo_owner.outputs.repo_owner }}/faas-netes:${{ github.sha }}
 
       - name: Build multi-arch containers for validation only
         uses: docker/build-push-action@v2
@@ -42,7 +47,7 @@ jobs:
           outputs: "type=image,push=false"
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           tags: |
-            ghcr.io/openfaas/faas-netes:${{ github.sha }}
+            ghcr.io/${{ steps.get_repo_owner.outputs.repo_owner }}/faas-netes:${{ github.sha }}
  # Todo - load the image into Kind before running tests
  # otherwise, this just tests the chart with images that
  # have already been built and pushed in an earlier job
