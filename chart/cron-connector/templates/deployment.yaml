@@ -32,6 +32,8 @@ spec:
         env:
           - name: gateway_url
             value: {{ .Values.gateway_url | quote }}
+          - name: asynchronous_invocation
+            value: {{ .Values.asynchronous_invocation | quote }}
           {{- if .Values.basic_auth }}
           - name: basic_auth
             value: "true"

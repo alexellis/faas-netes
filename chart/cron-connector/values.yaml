@@ -8,3 +8,5 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+asynchronous_invocation: false
