@@ -18,6 +18,8 @@ import (
 	"github.com/openfaas/faas-netes/pkg/k8s"
 )
 
+const functionLabel = "faas_function"
+
 // MakeFunctionReader handler for reading functions deployed in the cluster as deployments.
 func MakeFunctionReader(defaultNamespace string, deploymentLister v1.DeploymentLister) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -62,14 +64,13 @@ func getServiceList(functionNamespace string, deploymentLister v1.DeploymentList
 	functions := []types.FunctionStatus{}
 
 	sel := labels.NewSelector()
-	req, err := labels.NewRequirement("faas_function", selection.Exists, []string{})
+	req, err := labels.NewRequirement(functionLabel, selection.Exists, []string{})
 	if err != nil {
 		return functions, err
 	}
 	onlyFunctions := sel.Add(*req)
 
 	res, err := deploymentLister.Deployments(functionNamespace).List(onlyFunctions)
-
 	if err != nil {
 		return nil, err
 	}
