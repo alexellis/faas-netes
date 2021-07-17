@@ -50,8 +50,6 @@ You can use `OF_DEV_ENV` to set a custom name for the cluster. The default value
 As you are developing on `faas-netes`, you will want to build and test your own local images.  This can easily be done using the following commands
 
 ```sh
-export KUBECONFIG="$(kind get kubeconfig-path --name="${OF_DEV_ENV:-kind}")"
-
 make build
 
 kind load docker-image --name="${OF_DEV_ENV:-kind}" openfaas/faas-netes:latest
