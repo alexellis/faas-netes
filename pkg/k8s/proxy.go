@@ -11,11 +11,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/openfaas/faas-netes/pkg/config"
 	corelister "k8s.io/client-go/listers/core/v1"
 )
-
-// watchdogPort for the OpenFaaS function watchdog
-const watchdogPort = 8080
 
 func NewFunctionLookup(ns string, lister corelister.EndpointsLister) *FunctionLookup {
 	return &FunctionLookup{
@@ -91,7 +89,7 @@ func (l *FunctionLookup) Resolve(name string) (url.URL, error) {
 
 	serviceIP := svc.Subsets[0].Addresses[target].IP
 
-	urlStr := fmt.Sprintf("http://%s:%d", serviceIP, watchdogPort)
+	urlStr := fmt.Sprintf("http://%s:%d", serviceIP, config.WatchdogPort)
 
 	urlRes, err := url.Parse(urlStr)
 	if err != nil {

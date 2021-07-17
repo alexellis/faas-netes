@@ -3,10 +3,12 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
 	faasv1 "github.com/openfaas/faas-netes/pkg/apis/openfaas/v1"
+	"github.com/openfaas/faas-netes/pkg/config"
 	"github.com/openfaas/faas-netes/pkg/k8s"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -105,7 +107,9 @@ func newDeployment(
 							Name:  function.Spec.Name,
 							Image: function.Spec.Image,
 							Ports: []corev1.ContainerPort{
-								{ContainerPort: int32(functionPort), Protocol: corev1.ProtocolTCP},
+								{
+									ContainerPort: int32(config.WatchdogPort), Protocol: corev1.ProtocolTCP,
+								},
 							},
 							ImagePullPolicy: corev1.PullPolicy(factory.Factory.Config.ImagePullPolicy),
 							Env:             envVars,
@@ -183,12 +187,22 @@ func makeEnvVars(function *faasv1.Function) []corev1.EnvVar {
 		})
 	}
 
+	envVars = append(envVars,
+		corev1.EnvVar{
+			Name:  "PORT",
+			Value: fmt.Sprintf("%d", config.WatchdogPort),
+		})
+
+	reserved := []string{"PORT", "fprocess"}
+
 	if function.Spec.Environment != nil {
 		for k, v := range *function.Spec.Environment {
-			envVars = append(envVars, corev1.EnvVar{
-				Name:  k,
-				Value: v,
-			})
+			if findStr(k, reserved) == false {
+				envVars = append(envVars, corev1.EnvVar{
+					Name:  k,
+					Value: v,
+				})
+			}
 		}
 	}
 
@@ -281,4 +295,13 @@ func deploymentNeedsUpdate(function *faasv1.Function, deployment *appsv1.Deploym
 
 func int32p(i int32) *int32 {
 	return &i
+}
+
+func findStr(target string, list []string) bool {
+	for _, t := range list {
+		if target == t {
+			return true
+		}
+	}
+	return false
 }

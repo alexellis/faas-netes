@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/openfaas/faas-netes/pkg/config"
 	"github.com/openfaas/faas-netes/pkg/k8s"
 
 	types "github.com/openfaas/faas-provider/types"
@@ -312,11 +313,22 @@ func buildEnvVars(request *types.FunctionDeployment) []corev1.EnvVar {
 		})
 	}
 
-	for k, v := range request.EnvVars {
-		envVars = append(envVars, corev1.EnvVar{
-			Name:  k,
-			Value: v,
+	envVars = append(envVars,
+		corev1.EnvVar{
+			Name:  "PORT",
+			Value: fmt.Sprintf("%d", config.WatchdogPort),
 		})
+
+	reserved := []string{"PORT", "fprocess"}
+
+	for k, v := range request.EnvVars {
+		if findStr(k, reserved) == false {
+
+			envVars = append(envVars, corev1.EnvVar{
+				Name:  k,
+				Value: v,
+			})
+		}
 	}
 
 	sort.SliceStable(envVars, func(i, j int) bool {
@@ -400,4 +412,13 @@ func getMinReplicaCount(labels map[string]string) *int32 {
 	}
 
 	return nil
+}
+
+func findStr(target string, list []string) bool {
+	for _, t := range list {
+		if target == t {
+			return true
+		}
+	}
+	return false
 }

@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	faasv1 "github.com/openfaas/faas-netes/pkg/apis/openfaas/v1"
+	"github.com/openfaas/faas-netes/pkg/config"
 )
 
 // newService creates a new ClusterIP Service for a Function resource. It also sets
@@ -33,10 +34,10 @@ func newService(function *faasv1.Function) *corev1.Service {
 				{
 					Name:     "http",
 					Protocol: corev1.ProtocolTCP,
-					Port:     functionPort,
+					Port:     config.WatchdogPort,
 					TargetPort: intstr.IntOrString{
 						Type:   intstr.Int,
-						IntVal: int32(functionPort),
+						IntVal: int32(config.WatchdogPort),
 					},
 				},
 			},

@@ -126,8 +126,8 @@ func Test_buildEnvVars_NoSortedKeys(t *testing.T) {
 
 	coreEnvs := buildEnvVars(&function)
 
-	if len(coreEnvs) != 0 {
-		t.Errorf("want: %d env-vars, got: %d", 0, len(coreEnvs))
+	if len(coreEnvs) != 1 {
+		t.Errorf("want: %d env-vars, got: %d", 1, len(coreEnvs))
 		t.Fail()
 	}
 }
@@ -147,7 +147,12 @@ func Test_buildEnvVars_TwoSortedKeys(t *testing.T) {
 
 	coreEnvs := buildEnvVars(&function)
 
-	if coreEnvs[0].Name != firstKey {
+	if coreEnvs[0].Name != "PORT" {
+		t.Errorf("first want: %s, got: %s", "PORT", coreEnvs[0].Name)
+		t.Fail()
+	}
+
+	if coreEnvs[1].Name != firstKey {
 		t.Errorf("first want: %s, got: %s", firstKey, coreEnvs[0].Name)
 		t.Fail()
 	}
@@ -172,22 +177,26 @@ func Test_buildEnvVars_FourSortedKeys(t *testing.T) {
 
 	coreEnvs := buildEnvVars(&function)
 
-	if coreEnvs[0].Name != firstKey {
+	if coreEnvs[0].Name != "PORT" {
+		t.Errorf("first want: %s, got: %s", "PORT", coreEnvs[0].Name)
+		t.Fail()
+	}
+	if coreEnvs[1].Name != firstKey {
 		t.Errorf("first want: %s, got: %s", firstKey, coreEnvs[0].Name)
 		t.Fail()
 	}
 
-	if coreEnvs[1].Name != secondKey {
+	if coreEnvs[2].Name != secondKey {
 		t.Errorf("second want: %s, got: %s", secondKey, coreEnvs[1].Name)
 		t.Fail()
 	}
 
-	if coreEnvs[2].Name != thirdKey {
+	if coreEnvs[3].Name != thirdKey {
 		t.Errorf("third want: %s, got: %s", thirdKey, coreEnvs[2].Name)
 		t.Fail()
 	}
 
-	if coreEnvs[3].Name != lastKey {
+	if coreEnvs[4].Name != lastKey {
 		t.Errorf("last want: %s, got: %s", lastKey, coreEnvs[3].Name)
 		t.Fail()
 	}
