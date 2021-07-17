@@ -636,6 +636,53 @@ spec:
                                 any node on which any of the selected pods is running.
                                 Empty topologyKey is not allowed.
                               type: string
+              dnsConfig:
+                description: Specifies the DNS parameters of a pod. Parameters specified
+                  here will be merged to the generated DNS configuration based on
+                  DNSPolicy.
+                type: object
+                properties:
+                  nameservers:
+                    description: A list of DNS name server IP addresses. This will
+                      be appended to the base nameservers generated from DNSPolicy.
+                      Duplicated nameservers will be removed.
+                    type: array
+                    items:
+                      type: string
+                  options:
+                    description: A list of DNS resolver options. This will be merged
+                      with the base options generated from DNSPolicy. Duplicated entries
+                      will be removed. Resolution options given in Options will override
+                      those that appear in the base DNSPolicy.
+                    type: array
+                    items:
+                      description: PodDNSConfigOption defines DNS resolver options
+                        of a pod.
+                      type: object
+                      properties:
+                        name:
+                          description: Required.
+                          type: string
+                        value:
+                          type: string
+                  searches:
+                    description: A list of DNS search domains for host-name lookup.
+                      This will be appended to the base search paths generated from
+                      DNSPolicy. Duplicated search paths will be removed.
+                    type: array
+                    items:
+                      type: string
+              dnsPolicy:
+                description: "If specified, the pod's DNS policy. \n Valid values
+                  are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'.
+                  DNS parameters given in DNSConfig will be merged with the policy
+                  selected with DNSPolicy. To have DNS options set along with hostNetwork,
+                  you have to specify DNS policy explicitly to 'ClusterFirstWithHostNet'.
+                  \n copied to the Pod DNSPolicy, this will replace any existing value
+                  or previously applied Profile. \n Note: \"Default\" is not the default
+                  pod DNS policy. If a pod's dnsPolicy is not explicitly specified,
+                  then \"ClusterFirst\" is used."
+                type: string
               podSecurityContext:
                 description: "SecurityContext holds pod-level security attributes
                   and common container settings. Optional: Defaults to empty.  See

@@ -245,6 +245,16 @@ func (in *ProfileSpec) DeepCopyInto(out *ProfileSpec) {
 		*out = new(corev1.PodSecurityContext)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.DNSPolicy != nil {
+		in, out := &in.DNSPolicy, &out.DNSPolicy
+		*out = new(corev1.DNSPolicy)
+		**out = **in
+	}
+	if in.DNSConfig != nil {
+		in, out := &in.DNSConfig, &out.DNSConfig
+		*out = new(corev1.PodDNSConfig)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

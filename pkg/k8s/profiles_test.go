@@ -32,6 +32,10 @@ tolerations:
   operator: "Equal"
   value: "value1"
   effect: "NoExecute"
+dnsPolicy: "None"
+dnsConfig:
+  nameservers:
+    - 1.2.3.4
 `
 
 // invalidProfileYAML has a missing colon
@@ -488,6 +492,180 @@ func Test_PodSecurityProfile_Remove(t *testing.T) {
 	}
 }
 
+func Test_DNSPolicyProfile_Apply(t *testing.T) {
+	expectedPolicy := corev1.DNSDefault
+	p := Profile{DNSPolicy: &expectedPolicy}
+
+	basicDeployment := &appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: apiv1.PodTemplateSpec{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{Name: "testfunc", Image: "alpine:latest"},
+					},
+				},
+			},
+		},
+	}
+
+	factory := mockFactory()
+	factory.ApplyProfile(p, basicDeployment)
+	result := basicDeployment.Spec.Template.Spec.DNSPolicy
+	if expectedPolicy != result {
+		t.Fatalf("expected %s, got %v", expectedPolicy, result)
+	}
+}
+
+func Test_DNSPolicyProfile_Remove(t *testing.T) {
+	t.Run("remove matching DNS policy ", func(t *testing.T) {
+		initialPolicy := corev1.DNSDefault
+		p := Profile{DNSPolicy: &initialPolicy}
+
+		basicDeployment := &appsv1.Deployment{
+			Spec: appsv1.DeploymentSpec{
+				Template: apiv1.PodTemplateSpec{
+					Spec: apiv1.PodSpec{
+						DNSPolicy: initialPolicy,
+						Containers: []apiv1.Container{
+							{Name: "testfunc", Image: "alpine:latest"},
+						},
+					},
+				},
+			},
+		}
+
+		factory := mockFactory()
+		factory.RemoveProfile(p, basicDeployment)
+		result := basicDeployment.Spec.Template.Spec.DNSPolicy
+		if result != corev1.DNSClusterFirst {
+			t.Fatalf("expected DNSClusterFirst, got %s", result)
+		}
+	})
+
+	t.Run("leaves DNS Policy that does not match", func(t *testing.T) {
+		expectedPolicy := corev1.DNSClusterFirst
+		profilePolicy := corev1.DNSDefault
+		p := Profile{DNSPolicy: &profilePolicy}
+
+		basicDeployment := &appsv1.Deployment{
+			Spec: appsv1.DeploymentSpec{
+				Template: apiv1.PodTemplateSpec{
+					Spec: apiv1.PodSpec{
+						DNSPolicy: expectedPolicy,
+						Containers: []apiv1.Container{
+							{Name: "testfunc", Image: "alpine:latest"},
+						},
+					},
+				},
+			},
+		}
+
+		factory := mockFactory()
+		factory.RemoveProfile(p, basicDeployment)
+		result := basicDeployment.Spec.Template.Spec.DNSPolicy
+		if result != expectedPolicy {
+			t.Fatalf("expected %s, got %v", expectedPolicy, result)
+		}
+	})
+}
+
+func Test_DNSConfigProfile_Apply(t *testing.T) {
+	optionValue := "2"
+	expectedConfig := corev1.PodDNSConfig{
+		Nameservers: []string{"1.2.3.4"},
+		Searches: []string{
+			"ns1.svc.cluster-domain.example",
+			"my.dns.search.suffix",
+		},
+		Options: []corev1.PodDNSConfigOption{
+			{Name: "ndots", Value: &optionValue},
+			{Name: "edns0"},
+		},
+	}
+	p := Profile{DNSConfig: &expectedConfig}
+
+	basicDeployment := &appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: apiv1.PodTemplateSpec{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{Name: "testfunc", Image: "alpine:latest"},
+					},
+				},
+			},
+		},
+	}
+
+	factory := mockFactory()
+	factory.ApplyProfile(p, basicDeployment)
+	result := basicDeployment.Spec.Template.Spec.DNSConfig
+	if result == nil {
+		t.Fatalf("expected %+v\n got nil", &expectedConfig)
+	}
+	if !reflect.DeepEqual(&expectedConfig, result) {
+		t.Fatalf("expected %+v\n got %+v", &expectedConfig, result)
+	}
+}
+
+func Test_DNSConfigProfile_Remove(t *testing.T) {
+	t.Run("remove matching DNS Config ", func(t *testing.T) {
+		expectedConfig := corev1.PodDNSConfig{
+			Nameservers: []string{"1.2.3.4"},
+		}
+		p := Profile{DNSConfig: &expectedConfig}
+
+		basicDeployment := &appsv1.Deployment{
+			Spec: appsv1.DeploymentSpec{
+				Template: apiv1.PodTemplateSpec{
+					Spec: apiv1.PodSpec{
+						DNSConfig: &expectedConfig,
+						Containers: []apiv1.Container{
+							{Name: "testfunc", Image: "alpine:latest"},
+						},
+					},
+				},
+			},
+		}
+
+		factory := mockFactory()
+		factory.RemoveProfile(p, basicDeployment)
+		result := basicDeployment.Spec.Template.Spec.DNSConfig
+		if result != nil {
+			t.Fatalf("expected nil, got %+v", result)
+		}
+	})
+
+	t.Run("leaves DNS Config that does not match", func(t *testing.T) {
+		expectedConfig := corev1.PodDNSConfig{
+			Nameservers: []string{"1.2.3.4"},
+		}
+		profileConfig := corev1.PodDNSConfig{
+			Nameservers: []string{"8.8.8.8"},
+		}
+		p := Profile{DNSConfig: &profileConfig}
+
+		basicDeployment := &appsv1.Deployment{
+			Spec: appsv1.DeploymentSpec{
+				Template: apiv1.PodTemplateSpec{
+					Spec: apiv1.PodSpec{
+						DNSConfig: &expectedConfig,
+						Containers: []apiv1.Container{
+							{Name: "testfunc", Image: "alpine:latest"},
+						},
+					},
+				},
+			},
+		}
+
+		factory := mockFactory()
+		factory.RemoveProfile(p, basicDeployment)
+		result := basicDeployment.Spec.Template.Spec.DNSConfig
+		if !reflect.DeepEqual(&expectedConfig, result) {
+			t.Fatalf("expected %+v\n got %+v", &expectedConfig, result)
+		}
+	})
+}
+
 func Test_ConfigMapProfileParsing(t *testing.T) {
 	ctx := context.Background()
 	validConfig := corev1.ConfigMap{}
@@ -496,6 +674,10 @@ func Test_ConfigMapProfileParsing(t *testing.T) {
 	validConfig.Data = map[string]string{"profile": testProfile}
 
 	runtime := "gVisor"
+	dnsPolicy := corev1.DNSNone
+	dnsConfig := corev1.PodDNSConfig{
+		Nameservers: []string{"1.2.3.4"},
+	}
 	allowSpot := Profile{
 		RuntimeClassName: &runtime,
 		Tolerations: []apiv1.Toleration{
@@ -529,6 +711,8 @@ func Test_ConfigMapProfileParsing(t *testing.T) {
 				},
 			},
 		},
+		DNSPolicy: &dnsPolicy,
+		DNSConfig: &dnsConfig,
 	}
 
 	invalidConfig := corev1.ConfigMap{}
